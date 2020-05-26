@@ -1,10 +1,10 @@
-# GPMA BFS Demo
+# GPMA Demo
 
 Source code for the paper:
 
 [Accelerating Dynamic Graph Analytics on GPUs](http://www.vldb.org/pvldb/vol11/p107-sha.pdf)
 
-GPMA is a data structure to maintain dynamic graphs on GPUs. This repository illustrates a demo to conduct BFS on a dynamic graph, which is maintained by GPMA, on the GPU.
+GPMA is a data structure to maintain dynamic graphs on GPUs. This repository illustrates a demo to conduct BFS/Connected Component/PageRank on a dynamic graph, which is maintained by GPMA, on the GPU.
 
 ## Environment and Dependency
 This code is developed and tested on:
@@ -23,15 +23,15 @@ To build this demo, use ```make```.
 You may need to modify the ```Makefile``` with a proper setting, e.g., nvcc path, include path, and GPU architecture.
 
 ## Demo
-```./gpma_bfs_demo [graph_path] [bfs_start_node]```
+```./gpma_demo [bfs/cc/pr] [graph_path] [bfs_start_node]```
 
-In this demo, first, the first half of edges (the init sliding window) of the given graph will be loaded into GPMA, and then, BFS is conducted starting from the given start node. After that, the sliding window will be moved 100 times to the second half of edges, which means that the current sliding window will not overlap with the original one. Finally, BFS is conducted on the updated graph.
+In this demo, first, the first half of edges (the init sliding window) of the given graph will be loaded into GPMA, and then, the chosen graph application is conducted. After that, the sliding window will be moved 100 times to the second half of edges, which means that the current sliding window will not overlap with the original one. Finally, the corresponding graph application is conducted on the updated graph.
 
 The format of the given graph should start with one line including node_size and edge_size, and the following edge_size lines should provide all edges. The edges are directed.
 
 If you have executed ```preparation.py``` to generate a well-formatted pokec graph dataset in advance, and you want to start the BFS from node 0:
 
-```./gpma_bfs_demo pokec.txt 0```
+```./gpma_demo bfs pokec.txt 0```
 
 The output should be in a similar format as follows:
 
