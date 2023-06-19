@@ -130,22 +130,24 @@ __device__
 void cub_sort_key_value(KEY_TYPE *keys, VALUE_TYPE *values, SIZE_TYPE size, KEY_TYPE *tmp_keys,
         VALUE_TYPE *tmp_values) {
 
+    cub::DoubleBuffer<KEY_TYPE> d_keys(keys, tmp_keys);
+    cub::DoubleBuffer<VALUE_TYPE> d_values(values, tmp_values);
+
     void *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
 
-    cErr(cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes, keys, tmp_keys, values, tmp_values, size));
+    cErr(cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes, d_keys, d_values, size));
     cErr(cudaDeviceSynchronize());
     cErr(cudaMalloc(&d_temp_storage, temp_storage_bytes));
     cErr(cudaDeviceSynchronize());
-    cErr(cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes, keys, tmp_keys, values, tmp_values, size));
+    cErr(cub::DeviceRadixSort::SortPairs(d_temp_storage, temp_storage_bytes, d_keys, d_values, size));
     cErr(cudaDeviceSynchronize());
 
     SIZE_TYPE THREADS_NUM = 128;
     SIZE_TYPE BLOCKS_NUM = CALC_BLOCKS_NUM(THREADS_NUM, size);
-    memcpy_kernel<KEY_TYPE> <<<BLOCKS_NUM, THREADS_NUM>>>(keys, tmp_keys, size);
-    memcpy_kernel<VALUE_TYPE> <<<BLOCKS_NUM, THREADS_NUM>>>(values, tmp_values, size);
+    memcpy_kernel<KEY_TYPE><<<BLOCKS_NUM, THREADS_NUM>>>(d_keys.Alternate(), d_keys.Current(), size);
+    memcpy_kernel<VALUE_TYPE><<<BLOCKS_NUM, THREADS_NUM>>>(d_values.Alternate(), d_values.Current(), size);
     cErr(cudaDeviceSynchronize());
-
     cErr(cudaFree(d_temp_storage));
 }
 
